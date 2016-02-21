@@ -30,6 +30,7 @@ namespace EventsObservables
                 .Do(x => Console.WriteLine("TextChanged event {0}", x))
                 .Throttle(TimeSpan.FromMilliseconds(250))
                 .DistinctUntilChanged();
+                
             
             var movesSubscription = moves.Subscribe(pos => Console.WriteLine("Mouse at: " + pos)); 
             var inputSubscription = input.Subscribe(inp => Console.WriteLine("User wrote: " + inp));
@@ -42,7 +43,7 @@ namespace EventsObservables
                 term => matchInDict("wn", term, "prefix");
 
             var res = from term in input 
-                      from words in matchInWordNetByPrefix(term) 
+                      from words in matchInWordNetByPrefix(term).TakeUntil(input)
                       select words;
 
             var scheduler = new ControlScheduler(lst);
@@ -52,7 +53,8 @@ namespace EventsObservables
                 {
                     lst.Items.Clear();
                     lst.Items.AddRange((from word in words select word.Word).ToArray());
-                }
+                },
+                ex => MessageBox.Show("Exception: " + ex)
             );
         }
     }
